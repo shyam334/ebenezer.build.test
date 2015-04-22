@@ -52,7 +52,7 @@ object build extends Build {
           publishArtifact := false,
           // Ensures that the Hive tests are run before the test tests to avoid parallel execution problems
           (test in (testProject, Test)) <<= (test in (testProject, Test)).dependsOn(test in (hive, Test))
-        , addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.0" cross CrossVersion.full)
+        , addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full)
         ),
     aggregate = Seq(core, macros, testProject, hive)
   )
