@@ -22,11 +22,11 @@ import reflect.macros.Context
   * TODO: This macro creates Arbitrary instances for Thrift structs
   */
 object ArbitraryThriftMacro {
-  def hello(): Unit = macro hello_impl
+  def printparam(param: Any): Unit = macro printparam_impl
 
-  def hello_impl(c: Context)(): c.Expr[Unit] = {
+  def printparam_impl(c: Context)(param: c.Expr[Any]): c.Expr[Unit] = {
     import c.universe._
-    reify { println("Hello World!") }
+    reify { println(param.splice) }
   }
 }
 

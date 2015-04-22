@@ -27,7 +27,7 @@ object ArbitraryThriftMacroSpec extends Specification { def is = s2"""
     val seven = 7
 
     //ArbitraryThriftMacro.hello()
-    hello()
+    printparam(7)
 
     seven must_== 7
   }
