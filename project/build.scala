@@ -46,14 +46,48 @@ object build extends Build {
     base = file("."),
     settings =
       standardSettings
+        ++ uniform.project("ebenezer-all", "au.com.cba.omnia.ebenezer")
         ++ uniform.ghsettings
         ++ Seq(
           publishArtifact := false,
           // Ensures that the Hive tests are run before the test tests to avoid parallel execution problems
           (test in (testProject, Test)) <<= (test in (testProject, Test)).dependsOn(test in (hive, Test))
+        , addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.0" cross CrossVersion.full)
         ),
-    aggregate = Seq(core, testProject, hive)
+    aggregate = Seq(core, macros, testProject, hive)
   )
+
+  lazy val macros = Project(
+    id = "macros"
+  , base = file("macros")
+  , settings =
+       standardSettings
+    ++ uniform.project("ebenezer-macros", "au.com.cba.omnia.ebenezer.macros")
+    ++ Seq(
+         libraryDependencies <++= scalaVersion.apply(sv => Seq(
+           "org.scala-lang"   % "scala-compiler"   % sv
+         , "org.scala-lang"   % "scala-reflect"    % sv
+         , "org.scalamacros" %% "quasiquotes"      % "2.0.0"
+         , "com.twitter"      % "util-eval_2.10"   % "6.22.1" % "test"
+         ) ++ depend.testing()
+         )
+       , addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full)
+    )
+  ).dependsOn(core)
+
+  lazy val macrosTest = Project(
+    id = "macros-test"
+  , base = file("macros-test")
+  , settings =
+       standardSettings
+       ++ uniform.project("ebenezer-macros-test", "au.com.cba.omnia.ebenezer.macros.test")
+       ++ Seq(
+          libraryDependencies ++=
+            Seq(
+             "org.specs2"     %% "specs2"                    % depend.versions.specs
+            )
+       )
+  ).dependsOn(macros)
 
   lazy val core = Project(
     id = "core",
