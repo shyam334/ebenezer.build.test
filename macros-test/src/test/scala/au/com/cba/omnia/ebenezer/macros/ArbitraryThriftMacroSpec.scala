@@ -26,8 +26,19 @@ object ArbitraryThriftMacroSpec extends Specification { def is = s2"""
   def hellotest = {
     val seven = 7
 
+    val cust = Customer("Joe77", "Joe", "13 Joe Street", 77)
+
     //ArbitraryThriftMacro.hello()
-    printparam(7)
+    debug1(seven)
+    debug1(cust)
+
+    val g = genArbitrary("Customer",
+              List(("id", "String"),
+                   ("name", "String"),
+                   ("address", "String"),
+                   ("age", "Int"))
+            )
+    println(g)
 
     seven must_== 7
   }

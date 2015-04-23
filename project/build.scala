@@ -80,6 +80,7 @@ object build extends Build {
   , settings =
        standardSettings
        ++ uniform.project("ebenezer-macros-test", "au.com.cba.omnia.ebenezer.macros.test")
+       ++ uniformThriftSettings
        ++ Seq(
           libraryDependencies ++=
             Seq(

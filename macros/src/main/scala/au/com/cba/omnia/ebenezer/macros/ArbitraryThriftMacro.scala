@@ -22,11 +22,23 @@ import reflect.macros.Context
   * TODO: This macro creates Arbitrary instances for Thrift structs
   */
 object ArbitraryThriftMacro {
-  def printparam(param: Any): Unit = macro printparam_impl
+  def debug1(param: Any): Unit = macro debug_impl
 
-  def printparam_impl(c: Context)(param: c.Expr[Any]): c.Expr[Unit] = {
+  def debug_impl(c: Context)(param: c.Expr[Any]): c.Expr[Unit] = {
     import c.universe._
-    reify { println(param.splice) }
+    val paramRep = show(param.tree)
+    val paramRepTree = Literal(Constant(paramRep))
+    val paramRepExpr = c.Expr[String](paramRepTree)
+
+    reify { println(paramRepExpr.splice + " = " + param.splice) }
+  }
+
+  def genArbitrary(typ: String, fields: List[(String, String)]): String = {
+    (List("implicit def " + typ + "Arbitrary: Arbitrary[" + typ + "] =",
+         "  Arbitrary(for {") ++
+     fields.map { case (f,t) => s"    $f <- arbitrary[$t]" } ++
+     List("  } yield " + typ + "(" + fields.map { case (f,t) => s"$f.value" }.mkString(", ") + ")")
+    ).mkString("\n") 
   }
 }
 
