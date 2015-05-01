@@ -32,6 +32,32 @@ object ArbitraryThriftMacroSpec extends Specification { def is = s2"""
     debug1(seven)
     debug1(cust)
 
+    //mkFields[Customer]
+    //val arb = mkArbitrary[Customer]
+    import org.scalacheck.Arbitrary
+    import org.scalacheck.Arbitrary.arbitrary
+
+    implicit def CustomerArbitrary: Arbitrary[Customer] = mkArbArbitrary[Customer]
+
+    def isCustomer[T](v: T) = v match {
+      case _:Customer => true
+      case _          => false
+    }
+
+    println("CARB:")
+    val genCustomer = arbitrary[Customer]
+    val sampleCustomer = genCustomer.sample
+    println(sampleCustomer)
+    println(isCustomer(sampleCustomer))
+
+    val gF = genArbitraryFor("Customer",
+              List(("id", "String"),
+                   ("name", "String"),
+                   ("address", "String"),
+                   ("age", "Int"))
+            )
+    println(gF)
+
     val g = genArbitrary("Customer",
               List(("id", "String"),
                    ("name", "String"),
