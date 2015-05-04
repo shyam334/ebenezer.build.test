@@ -110,7 +110,7 @@ object ArbitraryThriftMacro {
           q"""arbitrary[$t] flatMap { $ni : $t => $out.$nn = $ni; ..$inner }"""
         }
       }
-  
+
       val inner = mkInner(args)
 
       q"""
@@ -135,7 +135,7 @@ object ArbitraryThriftMacro {
           q"""arbitrary[$t] flatMap { $nn : $t => ..$inner }"""
         }
       }
-  
+
       mkInner(args, List())
     }
 
@@ -153,5 +153,5 @@ object ArbitraryThriftMacro {
 
     c.Expr[Arbitrary[A]](result)
   }
-  
+
 }
