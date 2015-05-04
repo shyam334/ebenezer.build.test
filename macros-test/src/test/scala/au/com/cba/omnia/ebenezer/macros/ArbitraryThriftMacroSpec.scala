@@ -23,8 +23,27 @@ import org.specs2.matcher.{TerminationMatchers, ThrownExpectations}
 import au.com.cba.omnia.ebenezer.macros.ArbitraryThriftMacro._
 
 object ArbitraryThriftMacroSpec extends Specification { def is = s2"""
-    Generate arbitrary thrift struct: scrooge $arbitraryScroogeTest
+    Generate arbitrary thrift struct: Humbug  $arbitraryHumbugTest
+    Generate arbitrary thrift struct: Scrooge $arbitraryScroogeTest
 """
+
+  def arbitraryHumbugTest = {
+
+    def isCustomerHumbug[T](v: T) = v match {
+      case Some(_:CustomerHumbug) => true
+      case _                      => false
+    }
+
+    implicit def CustomerHumbugArbitrary: Arbitrary[CustomerHumbug] = thriftArbitrary[CustomerHumbug]
+
+    val genCustomer = arbitrary[CustomerHumbug]
+    val cust = genCustomer.sample
+    println (cust)
+    val result = isCustomerHumbug(cust)
+    //val result = isCustomerHumbug(genCustomer.sample)
+
+    result must_== true
+  }
 
   def arbitraryScroogeTest = {
 

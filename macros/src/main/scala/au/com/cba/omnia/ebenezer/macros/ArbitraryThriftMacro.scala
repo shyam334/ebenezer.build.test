@@ -245,7 +245,10 @@ object ArbitraryThriftMacro {
 
     //val humbugArbitrary: Tree  = q"..$humbugQList"
     val hHead = srcFieldsInfo.head
-    val humbugArbitrary: Tree = q"""new $srcType"""
+    def humbugGen(typ: Type, args: List[(String, Type)]): Tree = {
+      println ("Generating HUMBUG")
+      q"""new $srcType"""
+    }
 
 /*
     import org.scalacheck.Gen
@@ -256,6 +259,7 @@ object ArbitraryThriftMacro {
 */
 
     def scroogeGen(typ: Type, args: List[(String, Type)]): Tree = {
+      println ("Generating SCROOGE")
 
       def mkNew(vals: List[c.Tree]) = {
         val companion = typ.typeSymbol.companionSymbol
@@ -277,7 +281,7 @@ object ArbitraryThriftMacro {
     }
 
     val body = srcType match {
-      case t if t <:< humbugTyp => humbugArbitrary
+      case t if t <:< humbugTyp => humbugGen(srcType, expectedTypes)
       case _                    => scroogeGen(srcType, expectedTypes)
     }
 

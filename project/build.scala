@@ -89,7 +89,9 @@ object build extends Build {
              "org.specs2"     %% "specs2"                    % depend.versions.specs
             ),
           scroogeThriftSourceFolder in Test <<= (sourceDirectory) { _ / "test" / "thrift" / "scrooge" },
-          humbugThriftSourceFolder  in Test <<= (sourceDirectory) { _ / "test" / "thrift" / "humbug" }
+          humbugThriftSourceFolder  in Test <<= (sourceDirectory) { _ / "test" / "thrift" / "humbug" },
+          (humbugIsDirty in Compile) <<= (humbugIsDirty in Compile) map { (_) => true }
+
        )
   ).dependsOn(macros)
 
