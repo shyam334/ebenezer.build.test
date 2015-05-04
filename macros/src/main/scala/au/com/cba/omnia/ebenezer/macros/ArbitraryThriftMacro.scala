@@ -44,45 +44,6 @@ import au.com.cba.omnia.answer.Extractor
   * TODO: This macro creates Arbitrary instances for Thrift structs
   */
 object ArbitraryThriftMacro {
-  def debug1(param: Any): Unit = macro debug_impl
-
-  def debug_impl(c: Context)(param: c.Expr[Any]): c.Expr[Unit] = {
-    import c.universe._
-    val paramRep = show(param.tree)
-    val paramRepTree = Literal(Constant(paramRep))
-    val paramRepExpr = c.Expr[String](paramRepTree)
-
-    reify { println(paramRepExpr.splice + " = " + param.splice) }
-  }
-
-/*
-  def genArbitraryFor(typ: String, fields: List[(String, String)]): String = {
-    (List("implicit def " + typ + "Arbitrary: Arbitrary[" + typ + "] =",
-         "  Arbitrary(for {") ++
-     fields.map { case (f,t) => s"    $f <- arbitrary[$t]" } ++
-     List("  } yield " + typ + "(" + fields.map { case (f,t) => s"$f.value" }.mkString(", ") + ")")
-    ).mkString("\n") 
-  }
-
-  def genArbitraryFlatMap(typ: String, fields: List[(String, String)]): String = {
-    (List("implicit def " + typ + "Arbitrary: Arbitrary[" + typ + "] =",
-         "  Arbitrary(") ++
-     fields.map { case (f,t) => s" arbitrary[$t] flatMap { $f => " } ++
-     List(typ + "(" + fields.map { case (f,t) => s"$f.value" }.mkString(", ") + ")") ++
-     fields.map { case _ => "}" } ++ List(")")
-    ).mkString("\n") 
-  }
-  */
-
-/*
-  def genArbitrary(typ: String, fields: List[(String, Type)]): String = {
-    (
-     fields.map { case (f,t) => s" arbitrary[$ts] flatMap { $f => " }
-    ).mkString("")
-  }
-  */
-
-     //List("  } yield " + typ + "(" + fields.map { case (f,t) => s"$f.value" }.mkString(", ") + ")")
 
   val ProductField = """_(\d+)""".r
 
@@ -109,7 +70,6 @@ object ArbitraryThriftMacro {
     val entries    = fieldsFields[A](c)
     val companion  = typ.typeSymbol.companionSymbol
     val nameGetter = newTermName("name")
-    //val idGetter   = newTermName("id")
 
     val fields = entries.map({
       case (method, field) =>
@@ -140,14 +100,6 @@ object ArbitraryThriftMacro {
     c.Expr(r)
   }
 
-  //def generary[A <: ThriftStruct]: List[String] = macro fields2[A]
-
-  /** Gets all the fields of a Thrift struct sorted in order of definition.*/
-/*
-  def fields2[A <: ThriftStruct: c.WeakTypeTag](c: Context): List[String] =
-    fieldsUnsafe(c)(c.universe.weakTypeOf[A]).map{case (x,y) => y}
-*/
-
   /** Gets all the fields of a Thrift struct sorted in order of definition.*/
   def fieldsFields[A <: ThriftStruct: c.WeakTypeTag](c: Context): List[(c.universe.MethodSymbol, String)] =
     fieldsUnsafe(c)(c.universe.weakTypeOf[A])
@@ -163,13 +115,6 @@ object ArbitraryThriftMacro {
           case sym: TermSymbol if sym.isVar => sym.name.toString.trim //.capitalize
         }
       } else {
-/*
-        println("Check this out!")
-        println( typ.typeSymbol.companionSymbol.typeSignature
-          .member.map.toString)
-          //.member(newTermName("apply")).asMethod.paramss.toString) //head.map(_.toString.capitalize))
-        println("Checked!")
-*/
         typ.typeSymbol.companionSymbol.typeSignature
           .member(newTermName("apply")).asMethod.paramss.head.map(_.name.toString) //.capitalize)
       }
@@ -184,41 +129,6 @@ object ArbitraryThriftMacro {
   /** Same as methods but for any type where the type is assumed to be ThriftStruct.*/
   def methodsUnsafe(c: Context)(typ: c.universe.Type): List[c.universe.MethodSymbol] =
     indexedUnsafe(c)(typ).map({ case (method, _) => method })
-
-  /** Creates an extractor for a singleton type or product. */
-  def mkArbitrary[A]: Arbitrary[A] = macro impl[A]
-
-  def impl[A : c.WeakTypeTag](c: Context): c.Expr[Arbitrary[A]] = {
-    import c.universe._
-
-    val targetType: Type = c.universe.weakTypeOf[A]
-
-    /** Fail compilation with nice error message. */
-    def abort(msg: String) =
-      c.abort(c.enclosingPosition, s"Can't create Arbitrary for $targetType: $msg")
-
-    /** Process an individual column. 
-      */
-    def processColumn(typ: Type, position: Int): Tree = q"rs.get[$typ]($position)"
-
-    val targetTypes = targetType.declarations.sorted.toList collect {
-      case sym: TermSymbol if sym.isVal && sym.isCaseAccessor => sym.typeSignatureIn(targetType)
-    }
-
-    val extractors =
-      println(targetTypes)
-      if (targetTypes.isEmpty) processColumn(targetType, 1)
-      else {
-        val parts = targetTypes.zipWithIndex.map { case (typ, i) => processColumn(typ, i + 1) }
-        q"(..$parts)"
-      }
-
-      //import au.com.cba.omnia.ebenezer.Extractor
-    c.Expr[Arbitrary[A]](q"""
-      import org.scalacheck.Arbitrary
-      Arbitrary(rs => $extractors)
-    """)
-  }
 
   /** Creates an arbitrary instance for a singleton type or product. */
   def thriftArbitrary[A <: ThriftStruct]: Arbitrary[A] = macro arbImpl[A]
@@ -297,11 +207,6 @@ object ArbitraryThriftMacro {
       Arbitrary[$srcType]($body)
     """
 
-    println(srcFieldsInfo)
-
-    println(expectedTypes)
-
-    println(result)
     c.Expr[Arbitrary[A]](result)
   }
   
