@@ -229,7 +229,6 @@ object ArbitraryThriftMacro {
     val srcType       = c.universe.weakTypeOf[A]
     val humbugTyp     = c.universe.weakTypeOf[HumbugThriftStruct]
 
-    // val srcFieldsInfo = fieldsFields[A](c).map { case (f, n) => (n, f) }.toMap
     val srcFieldsInfo = fieldsFields[A](c).map { case (f, n) => f }
 
     val dstFields     = fieldsFields[A](c).map { case (f, n)  => (f, n) }
@@ -241,26 +240,32 @@ object ArbitraryThriftMacro {
     def abort(msg: String) =
       c.abort(c.enclosingPosition, s"Can't create arbitrary instance for $srcType: $msg")
 
-    //val humbugQList = srcFieldsInfo.map { case (n) => q"""$n <- arbitrary[String]""" }
-
-    //val humbugArbitrary: Tree  = q"..$humbugQList"
     val hHead = srcFieldsInfo.head
     def humbugGen(typ: Type, args: List[(String, Type)]): Tree = {
-      println ("Generating HUMBUG")
-      q"""new $srcType"""
-    }
+      //val out = newTermName(c.fresh)
+      val out = newTermName("out")
 
-/*
-    import org.scalacheck.Gen
-    def useArb[T, U](f : T => Gen[U])(implicit instance: Arbitrary[T]): Gen[U] = {
-        import org.scalacheck.Arbitrary.arbitrary
-        arbitrary[T] flatMap f //{ x => f x }
+      def mkInner(args: List[(String, Type)]): Tree = {
+        if (args.length == 0) {
+          q"$out"
+        } else {
+          val (n,t) = args.head
+          val nn = newTermName(n)
+          val ni = Ident(nn)
+          val inner = mkInner(args.tail)
+          q"""arbitrary[$t] flatMap { $ni : $t => $out.$nn = $ni; ..$inner }"""
+        }
+      }
+  
+      val inner = mkInner(args)
+
+      q"""
+        val $out = new $typ
+        ..$inner
+      """
     }
-*/
 
     def scroogeGen(typ: Type, args: List[(String, Type)]): Tree = {
-      println ("Generating SCROOGE")
-
       def mkNew(vals: List[c.Tree]) = {
         val companion = typ.typeSymbol.companionSymbol
         Apply(Select(Ident(companion), newTermName("apply")), vals)
