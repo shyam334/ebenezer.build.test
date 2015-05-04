@@ -55,6 +55,7 @@ object ArbitraryThriftMacro {
     reify { println(paramRepExpr.splice + " = " + param.splice) }
   }
 
+/*
   def genArbitraryFor(typ: String, fields: List[(String, String)]): String = {
     (List("implicit def " + typ + "Arbitrary: Arbitrary[" + typ + "] =",
          "  Arbitrary(for {") ++
@@ -71,12 +72,15 @@ object ArbitraryThriftMacro {
      fields.map { case _ => "}" } ++ List(")")
     ).mkString("\n") 
   }
+  */
 
-  def genArbitrary(typ: String, fields: List[(String, String)]): String = {
+/*
+  def genArbitrary(typ: String, fields: List[(String, Type)]): String = {
     (
-     fields.map { case (f,t) => s" arbitrary[$t] flatMap { $f => " }
+     fields.map { case (f,t) => s" arbitrary[$ts] flatMap { $f => " }
     ).mkString("")
   }
+  */
 
      //List("  } yield " + typ + "(" + fields.map { case (f,t) => s"$f.value" }.mkString(", ") + ")")
 
@@ -217,7 +221,7 @@ object ArbitraryThriftMacro {
   }
 
   /** Creates an arbitrary instance for a singleton type or product. */
-  def mkArbArbitrary[A <: ThriftStruct]: Arbitrary[A] = macro arbImpl[A]
+  def thriftArbitrary[A <: ThriftStruct]: Arbitrary[A] = macro arbImpl[A]
 
   def arbImpl[A <: ThriftStruct : c.WeakTypeTag](c: Context): c.Expr[Arbitrary[A]] = {
     import c.universe.{Symbol => _, _}
@@ -229,7 +233,7 @@ object ArbitraryThriftMacro {
     val srcFieldsInfo = fieldsFields[A](c).map { case (f, n) => f }
 
     val dstFields     = fieldsFields[A](c).map { case (f, n)  => (f, n) }
-    val expectedTypes = dstFields.map { case (f, n) => (n, f.returnType.toString) }
+    val expectedTypes = dstFields.map { case (f, n) => (n, f.returnType) }
 
     val in  = newTermName(c.fresh)
 
@@ -247,9 +251,16 @@ object ArbitraryThriftMacro {
     //val scroogeArbitrary: Tree = q"""throw new Exception("scrooge")""" // abort(s"OMG Scrooge")
     //val reifiedScrooge = q"""Customer("Jill33", "Jill", "33 Jill Street", 33)"""
 
+    import org.scalacheck.Gen
+    def useArb[T, U](f : T => Gen[U])(implicit instance: Arbitrary[T]): Gen[U] = {
+        import org.scalacheck.Arbitrary.arbitrary
+        arbitrary[T] flatMap f //{ x => f x }
+    }
+
     // Works
     //val reifiedScrooge = q"""arbitrary[String] flatMap { x => arbitrary[String] flatMap { y => Customer(x, y, "33 Jill Street", 33) }}"""
     //val reifiedScrooge = q"""implicit def CustomerArbitrary: Arbitrary[Customer] = Arbitrary(arbitrary[String] flatMap { x => arbitrary[String] flatMap { y => Customer(x, y, "33 Jill Street", 33) }})"""
+    //val reifiedScrooge = q"""arbitrary[String].flatMap(((id: String) => arbitrary[String].flatMap(((name: String) => arbitrary[String].flatMap(((address: String) => arbitrary[Int].flatMap(((age: Int) => Customer(id, name, address, age)))))))))"""
     //val scroogeArbitrary: Tree = reifiedScrooge
 
 
@@ -258,26 +269,31 @@ object ArbitraryThriftMacro {
       q"""implicit def $typ""" :+ q"""Arbitrary: Arbitrary[""" :+ q"""] = Arbitrary ()"""
 */
 
-    def mkGen(typ: String, args: List[(String, String)]): Tree = {
-  
-      //def mkInner(inBar: List[(String, String)], accNams: Tree): Tree = {
-      def mkInner(inBar: List[(String, String)]): Tree = {
+    def mkGen(typ: Type, args: List[(String, Type)]): Tree = {
+
+      def mkNew(vals: List[c.Tree]) = {
+        val companion = typ.typeSymbol.companionSymbol
+        Apply(Select(Ident(companion), newTermName("apply")), vals)
+      }
+
+      def mkInner(inBar: List[(String, Type)]): Tree = {
         if (inBar.length == 0) {
           //q"""$typ(..$accNams)"""
-          val fi = Ident(typ)
-          q"""$fi(id,name,address,age)"""
+          //q"""$typ(id,name,address,age)"""
+          mkNew(List(q"id", q"name", q"address", q"age"))
         } else {
           val (n,t) = inBar.head
           val nn = Ident(newTermName(n))
-          val ti = Ident(t)
+          //val ti = Ident(t)
           //val ts = TypeDef(Symbol(t))
           val inside = mkInner(inBar.tail)//, q"$n") //q"..$accNams $n")
-          q"""arbitrary[$ti] flatmap { ($nn : $ti) => ..$inside }"""
+          q"""arbitrary[$t] flatMap { ($nn : $t) => ..$inside }"""
         }
       }
   
       //mkInner(bar, q"")
       val result = mkInner(args)
+      println("mkGen generated:")
       println(result)
       result
     }
@@ -302,25 +318,27 @@ object ArbitraryThriftMacro {
       q"""arbitrary[String] flatMap { ($nn : String) => arbitrary[String] flatMap { y => Customer($nn, y, $boo, 33) }}"""
     }
 */
+
 /*
     def reef(typ: Type, boo: String): Tree = {
-      val q1 = q"""arbitrary[String] flatMap { x => arbitrary[String] flatMap { y => $typ(x, y, $boo, 33) }}"""
-      //val r = q"""$typ(x, y, $boo, 33)"""
-      //val q1 = q"""arbitrary[String] flatMap { x => arbitrary[String] flatMap { y => $r }}"""
+      //val q1 = q"""arbitrary[String] flatMap { x => arbitrary[String] flatMap { y => $typ(x, y, $boo, 33) }}"""
+      val r = q"""$typ(x, y, $boo, 33)"""
+      val q1 = q"""arbitrary[String] flatMap { x => arbitrary[String] flatMap { y => $r }}"""
       q"""..$q1"""
     }
-*/
+    */
+
+    //val cName = "Foofoo"
     //val scroogeArbitrary: Tree = reef(srcType, cName)
     //val xNam = newTermName(c.fresh)
     //val xTree = q"""$xNam"""
     //val scroogeArbitrary: Tree = reef(srcType, cName)
 
-    val scroogeArbitrary: Tree = mkGen(srcType.toString, expectedTypes)
+    val scroogeArbitrary: Tree = mkGen(srcType, expectedTypes)
 
     //val scroogeQ = genArbitrary(srcType.toString, expectedTypes)
     //val scroogeQ = genArbitraryFlatMap("Foofoo", expectedTypes)
     //val scroogeArbitrary: Tree = q""" ..$scroogeQ """
-    //val cName = "Foofoo"
     //val scroogeArbitrary = q"""..${genArbitraryFlatMap(${cName}, ${expectedTypes})}"""
     //val scroogeArbitrary = c.eval(genArbitraryFlatMap("Foofoofoo", expectedTypes))
 
@@ -329,21 +347,20 @@ object ArbitraryThriftMacro {
       case _                    => scroogeArbitrary
     }
 
-    //val sti = "Customer"
     val result = q"""
       import org.scalacheck.Arbitrary
       import org.scalacheck.Gen
       import org.scalacheck.Arbitrary.arbitrary
       Arbitrary[Customer]($body)
     """
-      //Arbitrary[$sti]($body)
       //Arbitrary[$srcType]($body)
 
     println(srcFieldsInfo)
 
     println(expectedTypes)
 
-    println(genArbitrary(srcType.toString, expectedTypes))
+    //println(genArbitrary(srcType.toString, expectedTypes))
+
 
     println(result)
     c.Expr[Arbitrary[A]](result)

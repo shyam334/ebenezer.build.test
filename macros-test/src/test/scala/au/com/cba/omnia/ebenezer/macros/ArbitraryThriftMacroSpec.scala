@@ -26,30 +26,7 @@ object ArbitraryThriftMacroSpec extends Specification { def is = s2"""
   def hellotest = {
     val seven = 7
 
-    val cust = Customer("Joe77", "Joe", "13 Joe Street", 77)
-
-    //ArbitraryThriftMacro.hello()
-    debug1(seven)
-    debug1(cust)
-
-    //mkFields[Customer]
-    //val arb = mkArbitrary[Customer]
-    import org.scalacheck.Arbitrary
-    import org.scalacheck.Arbitrary.arbitrary
-
-    implicit def CustomerArbitrary: Arbitrary[Customer] = mkArbArbitrary[Customer]
-
-    def isCustomer[T](v: T) = v match {
-      case _:Customer => true
-      case _          => false
-    }
-
-    println("CARB:")
-    val genCustomer = arbitrary[Customer]
-    val sampleCustomer = genCustomer.sample
-    println(sampleCustomer)
-    println(isCustomer(sampleCustomer))
-
+/*
     val gF = genArbitraryFor("Customer",
               List(("id", "String"),
                    ("name", "String"),
@@ -65,7 +42,33 @@ object ArbitraryThriftMacroSpec extends Specification { def is = s2"""
                    ("age", "Int"))
             )
     println(g)
+    */
 
-    seven must_== 7
+    val cust = Customer("Joe77", "Joe", "13 Joe Street", 77)
+
+    //ArbitraryThriftMacro.hello()
+    debug1(seven)
+    debug1(cust)
+
+    def isCustomer[T](v: T) = v match {
+      case Some(_:Customer) => true
+      case _                => false
+    }
+
+    //mkFields[Customer]
+    //val arb = mkArbitrary[Customer]
+    import org.scalacheck.Arbitrary
+    import org.scalacheck.Arbitrary.arbitrary
+
+    implicit def CustomerArbitrary: Arbitrary[Customer] = thriftArbitrary[Customer]
+
+    println("Test: Generating customer:")
+    val genCustomer = arbitrary[Customer]
+    val sampleCustomer = genCustomer.sample
+    println(sampleCustomer)
+    val result = isCustomer(sampleCustomer)
+    println("Is customer?: " + result)
+
+    result must_== true
   }
 }
