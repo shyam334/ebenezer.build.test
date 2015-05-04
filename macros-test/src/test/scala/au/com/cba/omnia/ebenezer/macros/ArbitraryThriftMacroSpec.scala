@@ -28,15 +28,15 @@ object ArbitraryThriftMacroSpec extends Specification { def is = s2"""
 
   def arbitraryScroogeTest = {
 
-    def isCustomer[T](v: T) = v match {
-      case Some(_:Customer) => true
-      case _                => false
+    def isCustomerScrooge[T](v: T) = v match {
+      case Some(_:CustomerScrooge) => true
+      case _                       => false
     }
 
-    implicit def CustomerArbitrary: Arbitrary[Customer] = thriftArbitrary[Customer]
+    implicit def CustomerScroogeArbitrary: Arbitrary[CustomerScrooge] = thriftArbitrary[CustomerScrooge]
 
-    val genCustomer = arbitrary[Customer]
-    val result = isCustomer(genCustomer.sample)
+    val genCustomer = arbitrary[CustomerScrooge]
+    val result = isCustomerScrooge(genCustomer.sample)
 
     result must_== true
   }

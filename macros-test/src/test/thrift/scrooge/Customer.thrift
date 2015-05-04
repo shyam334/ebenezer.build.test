@@ -14,7 +14,7 @@
 
 #@namespace scala au.com.cba.omnia.ebenezer.macros.test
 
-struct Customer {
+struct CustomerScrooge {
   1: string id
   2: string name
   3: string address

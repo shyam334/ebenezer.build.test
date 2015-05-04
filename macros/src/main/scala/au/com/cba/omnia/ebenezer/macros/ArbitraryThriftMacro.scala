@@ -245,11 +245,7 @@ object ArbitraryThriftMacro {
 
     //val humbugArbitrary: Tree  = q"..$humbugQList"
     val hHead = srcFieldsInfo.head
-    val humbugArbitrary: Tree = q"""println("Humbug: " + $hHead)"""
-    //val humbugArbitrary: Tree  = srcFieldsInfo.map { case (n) => q"""$n <- arbitrary[String]""" }
-    //    q"""throw new Exception("humbug")""" // abort(s"OMG HUMBUG")
-    //val scroogeArbitrary: Tree = q"""throw new Exception("scrooge")""" // abort(s"OMG Scrooge")
-    //val reifiedScrooge = q"""Customer("Jill33", "Jill", "33 Jill Street", 33)"""
+    val humbugArbitrary: Tree = q"""new $srcType"""
 
 /*
     import org.scalacheck.Gen
