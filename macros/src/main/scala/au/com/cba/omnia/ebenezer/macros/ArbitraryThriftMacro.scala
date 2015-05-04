@@ -276,23 +276,19 @@ object ArbitraryThriftMacro {
         Apply(Select(Ident(companion), newTermName("apply")), vals)
       }
 
-      def mkInner(inBar: List[(String, Type)]): Tree = {
-        if (inBar.length == 0) {
-          //q"""$typ(..$accNams)"""
-          //q"""$typ(id,name,address,age)"""
-          mkNew(List(q"id", q"name", q"address", q"age"))
+      def mkInner(args: List[(String, Type)], terms: List[Tree]): Tree = {
+        if (args.length == 0) {
+          mkNew(terms)
         } else {
-          val (n,t) = inBar.head
+          val (n,t) = args.head
           val nn = Ident(newTermName(n))
-          //val ti = Ident(t)
-          //val ts = TypeDef(Symbol(t))
-          val inside = mkInner(inBar.tail)//, q"$n") //q"..$accNams $n")
-          q"""arbitrary[$t] flatMap { ($nn : $t) => ..$inside }"""
+          val newTerms = terms :+ nn
+          val inside = mkInner(args.tail, newTerms)
+          q"""arbitrary[$t] flatMap { $nn : $t => ..$inside }"""
         }
       }
   
-      //mkInner(bar, q"")
-      val result = mkInner(args)
+      val result = mkInner(args, List())
       println("mkGen generated:")
       println(result)
       result
