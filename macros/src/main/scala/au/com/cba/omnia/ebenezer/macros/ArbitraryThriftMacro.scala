@@ -20,28 +20,14 @@ import reflect.macros.Context
 
 import scala.reflect.macros.Context
 
-//import org.scalacheck._, Gen._, Arbitrary._
 import org.scalacheck.Arbitrary
 
 import com.twitter.scrooge._
 
-//import au.com.cba.omnia.maestro.core.codec._
-
 import au.com.cba.omnia.humbug.HumbugThriftStruct
 
-
-/*
-package au.com.cba.omnia.answer.macros
-
-import scala.reflect.macros.Context
-
-import scalikejdbc.{DB => SDB, _}
-
-import au.com.cba.omnia.answer.Extractor
-*/
-
 /**
-  * TODO: This macro creates Arbitrary instances for Thrift structs
+  * This macro creates Arbitrary instances for Thrift structs
   */
 object ArbitraryThriftMacro {
 
@@ -60,46 +46,6 @@ object ArbitraryThriftMacro {
     }).sortBy(_._2)
   }
 
-  def mkFields[A <: ThriftStruct]: Any =
-      macro fieldsImpl[A]
-
-  def fieldsImpl[A <: ThriftStruct: c.WeakTypeTag](c: Context) = {
-    import c.universe._
-
-    val typ        = c.universe.weakTypeOf[A]
-    val entries    = fieldsFields[A](c)
-    val companion  = typ.typeSymbol.companionSymbol
-    val nameGetter = newTermName("name")
-
-    val fields = entries.map({
-      case (method, field) =>
-        val term    = q"""$companion.${newTermName(field + "Field")}"""
-        val srcName = q"""$term.$nameGetter"""
-        //val srcId   = q"""$term.$idGetter"""
-
-        println(field)
-
-/*
-        val get     = q"""au.com.cba.omnia.maestro.core.data.Accessor[${method.returnType}]($srcId)"""
-        val fld     = q"""au.com.cba.omnia.maestro.core.data.Field[$typ, ${method.returnType}]($srcName,$get)"""
-
-        q"""val ${newTermName(field)} = $fld"""
-*/
-    })
-    val refs = entries.map({
-      case (method, field) =>
-        val n = newTermName(field)
-        println(n)
-        q"$n"
-    })
-    val r =q"class FieldsWrapper { ..$fields; def AllFields = List(..$refs) }; new FieldsWrapper {}"
-
-    println(entries)
-
-    println(r)
-    c.Expr(r)
-  }
-
   /** Gets all the fields of a Thrift struct sorted in order of definition.*/
   def fieldsFields[A <: ThriftStruct: c.WeakTypeTag](c: Context): List[(c.universe.MethodSymbol, String)] =
     fieldsUnsafe(c)(c.universe.weakTypeOf[A])
@@ -116,7 +62,7 @@ object ArbitraryThriftMacro {
         }
       } else {
         typ.typeSymbol.companionSymbol.typeSignature
-          .member(newTermName("apply")).asMethod.paramss.head.map(_.name.toString) //.capitalize)
+          .member(newTermName("apply")).asMethod.paramss.head.map(_.name.toString)
       }
 
     methodsUnsafe(c)(typ).zip(fields)
@@ -131,15 +77,13 @@ object ArbitraryThriftMacro {
     indexedUnsafe(c)(typ).map({ case (method, _) => method })
 
   /** Creates an arbitrary instance for a singleton type or product. */
-  def thriftArbitrary[A <: ThriftStruct]: Arbitrary[A] = macro arbImpl[A]
+  def thriftArbitrary[A <: ThriftStruct]: Arbitrary[A] = macro impl[A]
 
-  def arbImpl[A <: ThriftStruct : c.WeakTypeTag](c: Context): c.Expr[Arbitrary[A]] = {
+  def impl[A <: ThriftStruct : c.WeakTypeTag](c: Context): c.Expr[Arbitrary[A]] = {
     import c.universe.{Symbol => _, _}
 
     val srcType       = c.universe.weakTypeOf[A]
     val humbugTyp     = c.universe.weakTypeOf[HumbugThriftStruct]
-
-    val srcFieldsInfo = fieldsFields[A](c).map { case (f, n) => f }
 
     val dstFields     = fieldsFields[A](c).map { case (f, n)  => (f, n) }
     val expectedTypes = dstFields.map { case (f, n) => (n, f.returnType) }
@@ -150,9 +94,9 @@ object ArbitraryThriftMacro {
     def abort(msg: String) =
       c.abort(c.enclosingPosition, s"Can't create arbitrary instance for $srcType: $msg")
 
-    val hHead = srcFieldsInfo.head
     def humbugGen(typ: Type, args: List[(String, Type)]): Tree = {
-      //val out = newTermName(c.fresh)
+      // https://issues.scala-lang.org/browse/SI-8425
+      //val out = newTermName(c.fresh) // Requires scala-2.11
       val out = newTermName("out")
 
       def mkInner(args: List[(String, Type)]): Tree = {
@@ -202,8 +146,8 @@ object ArbitraryThriftMacro {
 
     val result = q"""
       import org.scalacheck.Arbitrary
-      import org.scalacheck.Gen
       import org.scalacheck.Arbitrary.arbitrary
+      import org.scalacheck.Gen
       Arbitrary[$srcType]($body)
     """
 
