@@ -82,11 +82,14 @@ object build extends Build {
        standardSettings
        ++ uniform.project("ebenezer-macros-test", "au.com.cba.omnia.ebenezer.macros.test")
        ++ uniformThriftSettings
+       ++ humbugSettings
        ++ Seq(
           libraryDependencies ++=
             Seq(
              "org.specs2"     %% "specs2"                    % depend.versions.specs
-            )
+            ),
+          scroogeThriftSourceFolder in Test <<= (sourceDirectory) { _ / "test" / "thrift" / "scrooge" },
+          humbugThriftSourceFolder  in Test <<= (sourceDirectory) { _ / "test" / "thrift" / "humbug" }
        )
   ).dependsOn(macros)
 

@@ -14,60 +14,29 @@
 
 package au.com.cba.omnia.ebenezer.macros.test
 
+import org.scalacheck.Arbitrary
+import org.scalacheck.Arbitrary.arbitrary
+
 import org.specs2.Specification
 import org.specs2.matcher.{TerminationMatchers, ThrownExpectations}
 
 import au.com.cba.omnia.ebenezer.macros.ArbitraryThriftMacro._
 
 object ArbitraryThriftMacroSpec extends Specification { def is = s2"""
-    Test hello world $hellotest
+    Generate arbitrary thrift struct: scrooge $arbitraryScroogeTest
 """
 
-  def hellotest = {
-    val seven = 7
-
-/*
-    val gF = genArbitraryFor("Customer",
-              List(("id", "String"),
-                   ("name", "String"),
-                   ("address", "String"),
-                   ("age", "Int"))
-            )
-    println(gF)
-
-    val g = genArbitrary("Customer",
-              List(("id", "String"),
-                   ("name", "String"),
-                   ("address", "String"),
-                   ("age", "Int"))
-            )
-    println(g)
-    */
-
-    val cust = Customer("Joe77", "Joe", "13 Joe Street", 77)
-
-    //ArbitraryThriftMacro.hello()
-    debug1(seven)
-    debug1(cust)
+  def arbitraryScroogeTest = {
 
     def isCustomer[T](v: T) = v match {
       case Some(_:Customer) => true
       case _                => false
     }
 
-    //mkFields[Customer]
-    //val arb = mkArbitrary[Customer]
-    import org.scalacheck.Arbitrary
-    import org.scalacheck.Arbitrary.arbitrary
-
     implicit def CustomerArbitrary: Arbitrary[Customer] = thriftArbitrary[Customer]
 
-    println("Test: Generating customer:")
     val genCustomer = arbitrary[Customer]
-    val sampleCustomer = genCustomer.sample
-    println(sampleCustomer)
-    val result = isCustomer(sampleCustomer)
-    println("Is customer?: " + result)
+    val result = isCustomer(genCustomer.sample)
 
     result must_== true
   }
