@@ -69,7 +69,7 @@ object build extends Build {
          , "org.scalamacros" %% "quasiquotes"      % "2.0.0"
          , "org.scalacheck"  %% "scalacheck"       % depend.versions.scalacheck
          , "com.twitter"      % "util-eval_2.10"   % "6.22.1" % "test"
-         ) ++ depend.testing() ++ depend.shapeless()
+         ) ++ depend.testing()
          )
        , addCompilerPlugin("org.scalamacros" % "paradise" % "2.0.1" cross CrossVersion.full)
     )
