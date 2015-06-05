@@ -15,8 +15,7 @@
 package au.com.cba.omnia.ebenezer
 package fs
 
-import org.apache.hadoop.fs.Path
-import org.apache.hadoop.fs.FileSystem
+import org.apache.hadoop.fs.{PathNotFoundException, Path, FileSystem}
 import org.apache.hadoop.conf.Configuration
 
 object Glob {
@@ -25,6 +24,10 @@ object Glob {
 
   def paths(conf: Configuration, paths: List[Path]): List[Path] = {
     val fs = FileSystem.get(conf)
-    paths.flatMap(path => fs.globStatus(path).toList.map(_.getPath))
+    paths.flatMap(path => Option(fs.globStatus(path))
+        .getOrElse(throw new PathNotFoundException(String.valueOf(path)))
+        .toList
+        .map(_.getPath)
+      )
   }
 }

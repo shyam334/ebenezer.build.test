@@ -32,5 +32,5 @@ object Cat {
   }
 
   def main(args: Array[String]): Unit =
-    run(args.toList.tail)
+    run(args.toList)
 }
