@@ -354,3 +354,4 @@ Known Issues
   setting `HADOOP_HEAPSIZE`, or using cloudera manager, or perhaps something else. Be sure to test
   your settings afterwards to ensure that hadoop hasn't overriden your setting with another value
   from another piece of configuration.
+
