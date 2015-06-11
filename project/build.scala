@@ -118,8 +118,9 @@ object build extends Build {
         ++ Seq(
           libraryDependencies ++=
             depend.hadoopClasspath ++ depend.hadoop() ++ depend.scalaz() ++ depend.testing() ++ depend.parquet() ++ Seq(
-              "io.argonaut"     %% "argonaut"        % "6.1",
-              noHadoop("com.twitter" % "parquet-tools" % depend.versions.parquet) exclude("org.apache.hadoop", "hadoop-client")
+              noHadoop("com.twitter" % "parquet-tools" % depend.versions.parquet)
+                exclude("org.apache.hadoop", "hadoop-client"),
+              noHadoop("io.argonaut" %% "argonaut"     % "6.1")
             )
         )
   ).dependsOn(core % "test->test")

@@ -16,7 +16,7 @@ package au.com.cba.omnia.ebenezer.cli
 
 import org.apache.hadoop.conf.Configuration
 
-import argonaut._,Argonaut._
+import argonaut._, Argonaut._
 
 import au.com.cba.omnia.ebenezer.fs.Glob
 import au.com.cba.omnia.ebenezer.introspect._
