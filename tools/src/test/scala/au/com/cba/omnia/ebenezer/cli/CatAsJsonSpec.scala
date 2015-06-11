@@ -17,29 +17,34 @@ package au.com.cba.omnia.ebenezer.cli
 import java.util.UUID
 
 import argonaut._, Argonaut._
+
 import com.twitter.scalding.typed.IterablePipe
 import com.twitter.scrooge.ThriftStruct
+
 import org.scalacheck.Arbitrary
+
 import org.specs2.execute.Result
 
+import au.com.cba.omnia.ebenezer.ParquetLogging
 import au.com.cba.omnia.ebenezer.cli.CatAsJson._
 import au.com.cba.omnia.ebenezer.introspect._
 import au.com.cba.omnia.ebenezer.scrooge.ParquetScroogeSource
 import au.com.cba.omnia.ebenezer.test._, ThriftArbitraries._ , JavaArbitraries._
+
 import au.com.cba.omnia.thermometer.context.Context
 import au.com.cba.omnia.thermometer.core.Thermometer._
 import au.com.cba.omnia.thermometer.core._
 
-object CatAsJsonSpec extends ThermometerSpec { def is = s2"""
+object CatAsJsonSpec extends ThermometerSpec with ParquetLogging { def is = s2"""
 
 CatAsJson usage
 ================
   Read some parquet as records and cat it as JSON                 $usage
 
-  Read some parquet as records,
-   extract fields and cat as a flattened JSON                     $checkFlattenedFields
+  Read some parquet as records, extract fields and cat as a flattened JSON $checkFlattenedFields
+
 Types
-=====
+======
   Read booleans                                                   ${check("boolean", fromBoolish)}
   Read doubles                                                    ${check("double", fromDoublish)}
   Read bytes                                                      ${check("byte", fromBytish)}
@@ -50,6 +55,8 @@ Types
   Read nested                                                     ${check("nested", fromNestedish)}
   Read lists                                                      ${check("list", fromListish)}
   Read maps                                                       ${check("map", fromMapish)}
+  Read maps with numeric key                                      ${check("map", fromMapish2)}
+  Read maps with list as key                                      ${check("map", fromMapish3)}
   Read enums                                                      ${check("enum", fromEnumish)}
   """
 
@@ -147,6 +154,18 @@ Types
   def fromMapish: Mapish => Json = d => Record(List(
     Field("values", MapValue(Map(d.values.toList.map({
       case (k, v) => StringValue(k) -> StringValue(v)
+    }):_*)))
+  )).asJson
+
+  def fromMapish2: Mapish2 => Json = d => Record(List(
+    Field("values", MapValue(Map(d.values.toList.map({
+      case (k, v) => LongValue(k) -> StringValue(v)
+    }):_*)))
+  )).asJson
+
+  def fromMapish3: Mapish3 => Json = d => Record(List(
+    Field("values", MapValue(Map(d.values.toList.map({
+      case (k, v) => ListValue(k.map(StringValue(_)).toList) -> StringValue(v)
     }):_*)))
   )).asJson
 

@@ -69,3 +69,11 @@ struct Enumish {
 struct Listish2 {
   1: list<list<string>> values
 }
+
+struct Mapish2 {
+  1: map<i64, string> values
+}
+
+struct Mapish3 {
+  1: map<list<string>, string> values
+}

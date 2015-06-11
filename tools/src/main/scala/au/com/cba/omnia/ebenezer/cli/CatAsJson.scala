@@ -21,6 +21,11 @@ import argonaut._, Argonaut._
 import au.com.cba.omnia.ebenezer.fs.Glob
 import au.com.cba.omnia.ebenezer.introspect._
 
+/**
+ * Cli tool to read parquet file contents as Json.
+ * It expects a path or path glob in HDFS with parquet files.
+ * It will output to stdout.
+ */
 object CatAsJson {
   def run(patterns: List[String]): Unit = {
     val conf    = new Configuration
@@ -53,10 +58,24 @@ object CatAsJson {
       case DoubleValue(v)    => jNumber(v)
       case StringValue(v)    => jString(v)
       case ListValue(v)      => jArray(v.map(valueToJson(_)))
-      case MapValue(v)       => jObjectAssocList(v.map{case (k, v) =>
-                                  (String.valueOf(k), valueToJson(v)) }.toList)
+      case MapValue(v)       => mapValueToJson(v)
       case RecordValue(v)    => jArray(v.data.map(fieldToJson(_)))
-      case _                 => jNull
+      case null              => jNull
+    }
+  }
+
+  def mapValueToJson(mapValue: Map[Value, Value]): Json = {
+    if(mapValue.keys.forall(_.isInstanceOf[StringValue])) {
+      jObjectAssocList(
+        mapValue.map { case (k, v)  =>
+          (String.valueOf(k), valueToJson(v))
+        }.toList)
+    } else {
+      jArray(
+        mapValue.map { case (k, v)  =>
+          jObjectFields(("key", valueToJson(k)), ("value", valueToJson(v)))
+         }.toList
+      )
     }
   }
 

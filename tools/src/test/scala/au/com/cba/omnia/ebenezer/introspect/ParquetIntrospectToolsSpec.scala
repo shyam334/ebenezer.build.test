@@ -24,13 +24,14 @@ import org.scalacheck.Arbitrary
 
 import org.specs2.execute.Result
 
+import au.com.cba.omnia.ebenezer.ParquetLogging
 import au.com.cba.omnia.ebenezer.test._, ThriftArbitraries._, JavaArbitraries._
 import au.com.cba.omnia.ebenezer.scrooge.ParquetScroogeSource
 
 import au.com.cba.omnia.thermometer.core._, Thermometer._
 import au.com.cba.omnia.thermometer.context.Context
 
-object ParquetIntrospectToolsSpec extends ThermometerSpec { def is = s2"""
+object ParquetIntrospectToolsSpec extends ThermometerSpec with ParquetLogging { def is = s2"""
 
 Introspect usage
 ================

@@ -64,4 +64,14 @@ object ThriftArbitraries {
       address <- arbitrary[Utf8String]
       age <- arbitrary[Int]
     } yield Customer(id.value, name.value, address.value, age))
+
+  implicit def MapishAribiraryLongKey: Arbitrary[Mapish2] =
+    Arbitrary(arbitrary[List[(Long, Utf8String)]] map (ss =>
+      Mapish2(Map(ss.take(10)
+        .map({case (k, v) => (k, v.value)}): _*))))
+
+  implicit def MapishAribiraryListKey: Arbitrary[Mapish3] =
+    Arbitrary(arbitrary[List[(List[Utf8String], Utf8String)]] map (ss =>
+      Mapish3(Map(ss.take(10)
+        .map({case (k, v) => (k.map(_.value), v.value)}): _*))))
 }
