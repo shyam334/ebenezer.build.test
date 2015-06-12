@@ -16,6 +16,11 @@ resolvers ++= Seq(
   Resolver.url("commbank-releases-ivy", new URL("http://commbank.artifactoryonline.com/commbank/ext-releases-local-ivy"))(Patterns("[organization]/[module]_[scalaVersion]_[sbtVersion]/[revision]/[artifact](-[classifier])-[revision].[ext]")),
   "commbank-releases" at "http://commbank.artifactoryonline.com/commbank/ext-releases-local"
 )
+resolvers ++= Seq(
+  Resolver.url("Maven Repository", new URL("http://repo1.maven.org/maven2/"))(Patterns("[organization]/[module]/[module]-[revision].[ext]") )
+  )
+  
+  resolvers += "Cloudera third party" at "https://repository.cloudera.com/content/repositories/third-party/"
 
 val uniformVersion = "1.2.4-20150513065051-9b4cf64"
 
