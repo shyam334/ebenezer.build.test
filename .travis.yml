@@ -12,6 +12,6 @@ install:
 - ci/sbt-setup.sh
 - ci/sbt-setup-version.sh
 script:
-- sbt -Dsbt.global.base=$TRAVIS_BUILD_DIR/ci '; project tools; set fork in Test := false; test; assembly'
+- sbt -Dsbt.global.base=$TRAVIS_BUILD_DIR/ci '; project tools; set fork in Test := true; test; assembly'
 after_script:
 - rm -rf ci
