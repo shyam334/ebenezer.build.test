@@ -1,4 +1,4 @@
-sudo: true
+sudo: false
 language: scala
 jdk:
 - oraclejdk7
@@ -12,6 +12,6 @@ install:
 - ci/sbt-setup.sh
 - ci/sbt-setup-version.sh
 script:
-- sbt -Dsbt.global.base=$TRAVIS_BUILD_DIR/ci '; project core; set fork in Test := true; test; project hive; set fork in Test := true; test; project test; set fork in Test := true; test; project all; package; project example; set fork in Test := true; test; assembly; project compat; set fork in Test := true; test; project tools; set fork in Test := true; test; assembly'
+- sbt -Dsbt.global.base=$TRAVIS_BUILD_DIR/ci '; project core; set fork in Test := false; test; project hive; set fork in Test := false; test; project test; set fork in Test := false; test; project all; package; project example; set fork in Test := false; test; assembly; project compat; set fork in Test := false; test; project tools; set fork in Test := false; parallelExecution in Test := false; test; assembly'
 after_script:
 - rm -rf ci
