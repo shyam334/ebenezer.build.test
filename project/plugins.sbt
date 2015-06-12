@@ -21,7 +21,7 @@ resolvers ++= Seq(
   )
   
   resolvers ++= Seq(
-  Resolver.url("Cloudera", new URL("https://repository.cloudera.com/artifactory/cloudera-repos/"))(Patterns("[organization]/[module]/[module]-[revision].[ext]") )
+  Resolver.url("Cloudera third party", new URL("https://repository.cloudera.com/content/repositories/third-party/"))(Patterns("[organization]/[module]/[module]-[revision].[ext]") )
   )
 
 val uniformVersion = "1.2.4-20150513065051-9b4cf64"
