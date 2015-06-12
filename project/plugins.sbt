@@ -19,6 +19,10 @@ resolvers ++= Seq(
 resolvers ++= Seq(
   Resolver.url("Maven Repository", new URL("http://repo1.maven.org/maven2/"))(Patterns("[organization]/[module]/[module]-[revision].[ext]") )
   )
+  
+  resolvers ++= Seq(
+  Resolver.url("Cloudera", new URL("https://repository.cloudera.com/artifactory/cloudera-repos/"))(Patterns("[organization]/[module]/[module]-[revision].[ext]") )
+  )
 
 val uniformVersion = "1.2.4-20150513065051-9b4cf64"
 
