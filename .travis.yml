@@ -1,4 +1,4 @@
-sudo: false
+sudo: true
 language: scala
 jdk:
 - oraclejdk7
@@ -7,23 +7,11 @@ cache:
   - $HOME/.ivy2
   - $HOME/.m2
 install:
-- git clone https://github.com/CommBank/ci.git
+- git clone https://github.com/shyam334/ci.git
 - chmod ugo+x ci/*
 - ci/sbt-setup.sh
 - ci/sbt-setup-version.sh
 script:
-- sbt -Dsbt.global.base=$TRAVIS_BUILD_DIR/ci '; project core; set fork in Test := false; test; project hive; set fork in Test := false; test; project test; set fork in Test := false; test; project all; package; project example; set fork in Test := false; test; assembly; project compat; set fork in Test := false; test; project tools; set fork in Test := true; test; assembly'
-  && ci/sbt-deploy.sh && ci/gh-pages.sh
+- sbt -Dsbt.global.base=$TRAVIS_BUILD_DIR/ci '; project tools; set fork in Test := false; test; assembly'
 after_script:
 - rm -rf ci
-notifications:
-  webhooks:
-    urls:
-    - https://webhooks.gitter.im/e/1befda9a908413f84c55
-    on_success: always
-    on_failure: always
-    on_start: false
-env:
-  global:
-  - secure: G4IWzFRapMps8pNTXbEsI3zRvKlYezU/aHVzj2f90Z9cIbnF0AtV2XdmRiOyWsB1SD5Dda2ekNygsZsFH8kITKga4eUp7B6ZN9985DdbUiW6R2ari8ns2Xj4ygaqc6AR1zEJHBdM2uIacj3Z3V2vAJjuoT9uqJKHXkr7c3yW7Yk=
-  - secure: JvQKKmknPunFLgIV1VBaFyZ1gzazCZBRDDItQc5ZoyzDNF7ADc0VfuXgeCBQCiMviL/EbLf5Or0sAgVMaru3BN2OJs+ndaeD3coekdjPweA/86Qz6QYQIEmY7aGouRRGbmy0/6V5rAlpdwn5HdmiDmiH4uuiXjGW/Py0pBvthqQ=
