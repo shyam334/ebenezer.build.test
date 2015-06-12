@@ -21,7 +21,6 @@ resolvers ++= Seq(
   )
   
   resolvers += "Cloudera third party" at "https://repository.cloudera.com/content/repositories/third-party/"
-  )
 
 val uniformVersion = "1.2.4-20150513065051-9b4cf64"
 
